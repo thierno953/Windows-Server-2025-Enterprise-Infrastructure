@@ -72,14 +72,6 @@ Sales$
 Public$
 ```
 
-```powershell
-Get-SmbShare |
-Where-Object Name -in @(
-    'IT$','HR$','Finance$','Marketing$','Sales$','Public$'
-) |
-Select-Object Name,Path,FolderEnumerationMode,EncryptData
-```
-
 ![SMB Shares](assets/04-smb-shares.png)
 
 ---
@@ -92,13 +84,6 @@ SMB Full
 NTFS Modify
    =
 Effective Modify
-```
-
-```powershell
-Get-SmbShareAccess -Name "HR$"
-
-$HRPath = (Get-SmbShare -Name "HR$").Path
-(Get-Acl $HRPath).Access
 ```
 
 Administrative ACLs preserved:
@@ -130,17 +115,13 @@ Modify : Allowed
 
 Negative test:
 
-```powershell
-Get-ChildItem "\\FILE01\Finance$" -ErrorAction Stop
-```
+![Access Denied](assets/07-access-denied.png)
 
 Result:
 
 ```text
 Access Denied
 ```
-
-![Access Denied](assets/07-access-denied.png)
 
 ---
 
