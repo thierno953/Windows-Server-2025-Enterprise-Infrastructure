@@ -43,11 +43,6 @@ Shares
 └── Public
 ```
 
-```powershell
-Get-Disk
-Get-Volume
-```
-
 ![Storage](assets/02-storage-tree.png)
 
 ---
@@ -61,10 +56,6 @@ Get-Volume
 | `GG-Finance`   | `DL-FS-Finance-Modify`   | `Finance$` Modify   |
 | `GG-Marketing` | `DL-FS-Marketing-Modify` | `Marketing$` Modify |
 | `GG-Sales`     | `DL-FS-Sales-Modify`     | `Sales$` Modify     |
-
-```powershell
-Get-ADGroupMember "DL-FS-HR-Modify"
-```
 
 ![AGDLP](assets/03-agdlp-groups.png)
 
@@ -155,14 +146,7 @@ Access Denied
 
 ## SMB Security
 
-```powershell
-Get-SmbServerConfiguration |
-Select-Object `
-    EnableSMB1Protocol,
-    EnableSMB2Protocol,
-    EnableSecuritySignature,
-    RequireSecuritySignature
-```
+![SMB Security](assets/08-smb-security.png)
 
 ```text
 SMB1            : Disabled / Not Required
@@ -170,8 +154,6 @@ SMB2/SMB3       : Enabled
 ABE             : Enabled
 Least Privilege : Applied
 ```
-
-![SMB Security](assets/08-smb-security.png)
 
 ---
 
@@ -183,20 +165,13 @@ Type             : Hard
 Thresholds       : 80% / 90% / 100%
 ```
 
-```powershell
-Get-FsrmQuota |
-Select-Object Path,Size,Usage,SoftLimit,Description
-```
-
 ![FSRM](assets/09-fsrm-quotas.png)
 
 ---
 
 ## Backup
 
-```powershell
-wbadmin get versions
-```
+![FILE01 Backup](assets/10-fileserver-backup.png)
 
 ```text
 Backup target:
@@ -205,8 +180,6 @@ FILE01_BACKUP_TARGET (F:)
 Can recover:
 Volume(s), File(s)
 ```
-
-![FILE01 Backup](assets/10-fileserver-backup.png)
 
 ---
 
@@ -218,15 +191,7 @@ Restored file:
 C:\Restore-Test\Backup-Test.txt
 ```
 
-```powershell
-Get-FileHash `
-    "C:\Restore-Test\Backup-Test.txt" `
-    -Algorithm SHA256
-```
-
-```text
-D73A8BF5DAF8AFEED3392B31EF20E0CEC2A379B2D1D17BC394B8580AA90854B9
-```
+![Restore Validation](assets/11-restore-validation.png)
 
 ACL validation:
 
@@ -243,18 +208,11 @@ ACL preservation : PASS
 SMB validation   : PASS
 ```
 
-![Restore Validation](assets/11-restore-validation.png)
-
 ---
 
-## Final Validation
+## SMB / NTFS Permissions
 
-```powershell
-Get-Service LanmanServer
-Get-SmbShare
-Get-SmbSession
-Get-SmbOpenFile
-```
+![FILE01 Final Validation](assets/12-fileserver-final-validation.png)
 
 ```text
 LanmanServer   : Running
@@ -266,8 +224,6 @@ Isolation      : Functional
 Backup         : Available
 Restore        : Validated
 ```
-
-![FILE01 Final Validation](assets/12-fileserver-final-validation.png)
 
 ### Validation
 
@@ -287,19 +243,3 @@ Restore        : Validated
 | ACL Preservation     |   ✅   |
 
 **Status:** ✅ `VALIDATED`
-
----
-
-# PROJECT STATUS
-
-```text
-PHASE 01 - ACTIVE DIRECTORY : VALIDATED
-PHASE 02 - DNS              : VALIDATED
-PHASE 03 - DHCP             : VALIDATED
-PHASE 04 - GROUP POLICY     : VALIDATED
-PHASE 05 - FILE SERVER      : VALIDATED
-```
-
-## Core Skills
-
-`Windows Server 2025` · `Active Directory` · `DNS` · `DHCP` · `Group Policy` · `PowerShell` · `FSMO` · `Replication` · `BitLocker` · `Windows LAPS` · `AGDLP` · `SMB` · `NTFS` · `FSRM` · `Backup & Restore` · `Troubleshooting`

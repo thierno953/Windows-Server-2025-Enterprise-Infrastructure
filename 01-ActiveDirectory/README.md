@@ -54,20 +54,7 @@ C:\SysAdminToolkit\02-ActiveDirectory
 
 ## Users and Groups
 
-```powershell
-Get-ADUser `
-  -SearchBase "OU=Users,OU=Diarabaka,DC=diarabaka,DC=com" `
-  -SearchScope Subtree `
-  -Filter * `
-  -Properties Department,Title,Enabled |
-Select-Object Name,SamAccountName,Enabled,Department,Title
-```
-
 ![AD Users](assets/03-utilisateurs-ad.png)
-
-```powershell
-Get-ADGroupMember "Domain Admins"
-```
 
 ![AD Groups](assets/04-groupes-membership.png)
 
@@ -107,10 +94,6 @@ Helpdesk operations:
 | Lockout duration      | 15 minutes |
 | Reversible encryption | Disabled   |
 
-```powershell
-Get-ADDefaultDomainPasswordPolicy | Format-List
-```
-
 ![Password Policy](assets/06-password-lockout-policy.png)
 
 ---
@@ -132,38 +115,23 @@ Global Catalog
 └── DC02
 ```
 
-```powershell
-netdom query fsmo
-```
-
 ![FSMO](assets/07-fsmo-global-catalog.png)
 
 ---
 
 ## Replication
 
-```powershell
-repadmin /replsummary
-```
+![AD Replication](assets/08-replication.png)
 
 ```text
 Replication failures : 0
 ```
 
-![AD Replication](assets/08-replication.png)
-
 ---
 
 ## Health Check
 
-```powershell
-dcdiag /e `
-  /test:Advertising `
-  /test:Services `
-  /test:SysVolCheck `
-  /test:NetLogons `
-  /test:DNS
-```
+![AD Health](assets/09-dcdiag-health.png)
 
 ```text
 DC01        : PASS
@@ -175,15 +143,9 @@ NetLogons   : PASS
 DNS         : PASS
 ```
 
-![AD Health](assets/09-dcdiag-health.png)
-
 ---
 
 ## Backup / Restore
-
-```powershell
-wbadmin get versions
-```
 
 - System State backup
 - separate backup target

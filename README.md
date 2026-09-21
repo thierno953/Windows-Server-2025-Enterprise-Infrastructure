@@ -3,7 +3,9 @@
 Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active Directory, DNS, DHCP, Group Policy, File Services, and PowerShell.
 
 **Domain:** `diarabaka.com`
+
 **Network:** `192.168.1.0/24`
+
 **Status:** ✅ `VALIDATED / COMPLETED`
 
 ---
@@ -163,3 +165,24 @@ GROUP POLICY     : VALIDATED
 FILE SERVER      : VALIDATED
 BACKUP / RESTORE : VALIDATED
 ```
+
+
+----
+
+Built and validated a Windows Server 2025 enterprise infrastructure in a VMware lab environment.
+
+Implemented:
+
+* Active Directory with two Domain Controllers
+* DNS redundancy and AD-integrated zones
+* DHCP Failover 50/50
+* Group Policy security baseline
+* BitLocker and Windows LAPS
+* File Server with AGDLP, SMB and NTFS permissions
+* FSRM quotas
+* Backup and restore validation
+* PowerShell automation
+
+Domain: `diarabaka.com`
+
+Status: ✅ Validated / Completed

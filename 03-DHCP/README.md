@@ -48,11 +48,6 @@ Get-DhcpServerv4Binding
 | End       | `192.168.1.200`  |
 | Mask      | `255.255.255.0`  |
 
-```powershell
-Get-DhcpServerv4Scope |
-Format-Table ScopeId,Name,StartRange,EndRange,SubnetMask,State
-```
-
 ![DHCP Scope](assets/03-dhcp-scope.png)
 
 ---
@@ -65,19 +60,11 @@ Format-Table ScopeId,Name,StartRange,EndRange,SubnetMask,State
 | `006` DNS    | `192.168.1.10`, `192.168.1.11` |
 | `015` Domain | `diarabaka.com`                |
 
-```powershell
-Get-DhcpServerv4OptionValue -ScopeId 192.168.1.0
-```
-
 ![DHCP Options](assets/04-dhcp-options.png)
 
 ---
 
 ## Lease / Reservation
-
-```powershell
-Get-DhcpServerv4Reservation -ScopeId 192.168.1.0
-```
 
 ![WIN11 Reservation](assets/05-win11-lease-reservation.png)
 
@@ -85,9 +72,7 @@ Get-DhcpServerv4Reservation -ScopeId 192.168.1.0
 
 ## WIN11 Configuration
 
-```powershell
-ipconfig /all
-```
+![WIN11 IPConfig](assets/06-win11-ipconfig.png)
 
 ```text
 DHCP       : Enabled
@@ -97,15 +82,11 @@ DNS 2      : 192.168.1.11
 DNS suffix : diarabaka.com
 ```
 
-![WIN11 IPConfig](assets/06-win11-ipconfig.png)
-
 ---
 
 ## Dynamic DNS
 
-```powershell
-Resolve-DnsName WIN11.diarabaka.com
-```
+![Dynamic DNS](assets/07-dhcp-ddns.png)
 
 ```text
 WIN11
@@ -113,16 +94,11 @@ WIN11
 └── PTR
 ```
 
-![Dynamic DNS](assets/07-dhcp-ddns.png)
-
 ---
 
 ## DHCP Failover
 
-```powershell
-Get-DhcpServerv4Failover -ComputerName DC01 |
-Format-List
-```
+![DHCP Failover](assets/08-dhcp-failover.png)
 
 | Parameter             | Value            |
 | --------------------- | ---------------- |
@@ -134,17 +110,9 @@ Format-List
 | State Switch Interval | `01:00:00`       |
 | MCLT                  | Configured       |
 
-![DHCP Failover](assets/08-dhcp-failover.png)
-
 ---
 
 ## Synchronization
-
-```powershell
-Get-DhcpServerv4Lease `
-    -ComputerName DC02 `
-    -ScopeId 192.168.1.0
-```
 
 ![DHCP Synchronization](assets/09-dhcp-synchronization.png)
 
@@ -172,26 +140,15 @@ ipconfig /renew
 
 ## Recovery
 
-```powershell
-Get-DhcpServerv4Failover -ComputerName DC01 |
-Format-List
-```
+![DHCP Recovery](assets/11-dhcp-recovery.png)
 
 ```text
 State : Normal
 ```
 
-![DHCP Recovery](assets/11-dhcp-recovery.png)
-
 ---
 
 ## Final Validation
-
-```powershell
-Get-WinEvent `
-    -LogName "Microsoft-Windows-Dhcp-Server/Operational" `
-    -MaxEvents 30
-```
 
 ![DHCP Final Validation](assets/12-dhcp-final-validation.png)
 

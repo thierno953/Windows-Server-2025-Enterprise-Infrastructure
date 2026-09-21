@@ -21,16 +21,6 @@ DIARABAKA.COM
 
 ## GPO Scope
 
-```powershell
-Get-GPO -All |
-Select-Object DisplayName,GpoStatus
-```
-
-```powershell
-Get-GPInheritance `
-    -Target "OU=Workstations,OU=Computers,OU=Diarabaka,DC=diarabaka,DC=com"
-```
-
 ![GPO Scope](assets/02-gpo-inventory-scope.png)
 
 ---
@@ -47,17 +37,7 @@ Cloud Protection
 Windows Update
 ```
 
-```powershell
-Get-NetFirewallProfile |
-Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction
-```
-
 ![Security Baseline](assets/03-security-baseline-gpo.png)
-
-```powershell
-Get-MpComputerStatus |
-Select-Object AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled
-```
 
 ![Firewall Defender](assets/04-firewall-defender-effective.png)
 
@@ -65,10 +45,7 @@ Select-Object AntivirusEnabled,RealTimeProtectionEnabled,BehaviorMonitorEnabled
 
 ## GPO Application
 
-```powershell
-gpupdate /force
-gpresult /r /scope computer
-```
+![GPResult](assets/05-gpresult-applied.png)
 
 Applied:
 
@@ -78,17 +55,11 @@ GPO-Windows11-BitLocker
 GPO-Windows11-LAPS
 ```
 
-![GPResult](assets/05-gpresult-applied.png)
-
 ---
 
 ## BitLocker
 
-```powershell
-Get-Tpm
-manage-bde -status C:
-manage-bde -protectors -get C:
-```
+![BitLocker](assets/06-bitlocker-status.png)
 
 Validated:
 
@@ -100,25 +71,15 @@ TPM Protector      : Present
 Recovery Password  : Present
 ```
 
-![BitLocker](assets/06-bitlocker-status.png)
-
 ---
 
 ## BitLocker Recovery in AD
 
-```powershell
-$ComputerDN = (Get-ADComputer WIN11).DistinguishedName
-
-Get-ADObject `
-  -Filter 'objectClass -eq "msFVE-RecoveryInformation"' `
-  -SearchBase $ComputerDN
-```
+![BitLocker AD Recovery](assets/07-bitlocker-ad-recovery.png)
 
 ```text
 msFVE-RecoveryInformation
 ```
-
-![BitLocker AD Recovery](assets/07-bitlocker-ad-recovery.png)
 
 > Recovery key redacted.
 
@@ -134,27 +95,11 @@ msFVE-RecoveryInformation
 | Encryption                  | Enabled          |
 | Post-Authentication Actions | Configured       |
 
-```powershell
-Find-LapsADExtendedRights `
-    -Identity "OU=Workstations,OU=Computers,OU=Diarabaka,DC=diarabaka,DC=com"
-```
-
 ![Windows LAPS](assets/08-laps-gpo-settings.png)
 
 ---
 
 ## LAPS Processing
-
-```powershell
-Invoke-LapsPolicyProcessing
-Get-LapsDiagnostics
-```
-
-```powershell
-Get-WinEvent `
-    -LogName "Microsoft-Windows-LAPS/Operational" `
-    -MaxEvents 30
-```
 
 ![LAPS Validation](assets/09-laps-processing.png)
 
@@ -183,21 +128,13 @@ Replication failures : 0
 
 ## GPO Backup
 
-```powershell
-$BackupPath = "C:\SysAdminToolkit\05-GroupPolicy\Backups"
-
-Backup-GPO -All -Path $BackupPath
-```
-
 ![GPO Backup](assets/11-gpo-backup.png)
 
 ---
 
 ## Post-Reboot Validation
 
-```powershell
-gpresult /r /scope computer
-```
+![GPO Final Validation](assets/12-gpo-final-validation.png)
 
 ```text
 Security Baseline : PASS
@@ -206,8 +143,6 @@ Defender          : PASS
 BitLocker         : PASS
 Windows LAPS      : PASS
 ```
-
-![GPO Final Validation](assets/12-gpo-final-validation.png)
 
 ### Validation
 
