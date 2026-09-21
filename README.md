@@ -68,8 +68,6 @@ Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active
 
 ![File Server](05-FileServer/assets/04-smb-shares.png)
 
-> Additional commands, screenshots, and validation results are available in each phase.
-
 ---
 
 ## Key Technologies
