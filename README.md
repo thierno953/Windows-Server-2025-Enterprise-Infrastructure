@@ -54,19 +54,19 @@ Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active
 
 ### Active Directory
 
-![Active Directory](01-ActiveDirectory/captures/09-dcdiag-health.png)
+![Active Directory](01-ActiveDirectory/assets/09-dcdiag-health.png)
 
 ### DHCP Failover
 
-![DHCP Failover](03-DHCP/captures/08-dhcp-failover.png)
+![DHCP Failover](03-DHCP/assets/08-dhcp-failover.png)
 
 ### Group Policy / BitLocker
 
-![BitLocker](04-GroupPolicy/captures/06-bitlocker-status.png)
+![BitLocker](04-GroupPolicy/assets/06-bitlocker-status.png)
 
 ### File Server
 
-![File Server](05-FileServer/captures/04-smb-shares.png)
+![File Server](05-FileServer/assets/04-smb-shares.png)
 
 > Additional commands, screenshots, and validation results are available in each phase.
 
