@@ -109,20 +109,13 @@ msFVE-RecoveryInformation
 
 ## SYSVOL / Replication
 
-```powershell
-Test-Path "\\diarabaka.com\SYSVOL"
-Test-Path "\\diarabaka.com\NETLOGON"
-repadmin /replsummary
-dcdiag /test:sysvolcheck /test:advertising
-```
+![SYSVOL Replication](assets/10-sysvol-replication.png)
 
 ```text
 SYSVOL               : PASS
 NETLOGON              : PASS
 Replication failures : 0
 ```
-
-![SYSVOL Replication](assets/10-sysvol-replication.png)
 
 ---
 
