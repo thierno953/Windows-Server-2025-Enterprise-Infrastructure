@@ -1,5 +1,10 @@
 # Windows Server 2025 Enterprise Infrastructure
 
+![Windows Server](https://img.shields.io/badge/Windows%20Server-2025-0078D4)
+![PowerShell](https://img.shields.io/badge/PowerShell-Automation-5391FE)
+![Status](https://img.shields.io/badge/Status-Validated-brightgreen)
+![Platform](https://img.shields.io/badge/Platform-VMware-lightgrey)
+
 Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active Directory, DNS, DHCP, Group Policy, File Services, and PowerShell.
 
 **Domain:** `diarabaka.com`
@@ -13,176 +18,128 @@ Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active
 ## Architecture
 
 ```text
-                         DIARABAKA.COM
-                               │
-                ┌──────────────┴──────────────┐
-                ▼                             ▼
-              DC01                          DC02
-        192.168.1.10                   192.168.1.11
-       AD DS / DNS / DHCP             AD DS / DNS / DHCP
-                │                             │
-                └──────────────┬──────────────┘
-                               │
-                        AD Replication
-                               │
-                   ┌───────────┴───────────┐
-                   ▼                       ▼
-                 WIN11                   FILE01
-             Domain Client              File Server
+                    DIARABAKA.COM
+                          │
+           ┌──────────────┴──────────────┐
+           ▼                             ▼
+         DC01                          DC02
+   192.168.1.10                   192.168.1.11
+  AD DS / DNS / DHCP             AD DS / DNS / DHCP
+           │                             │
+           └──────────────┬──────────────┘
+                          │
+                    AD Replication
+                          │
+                ┌─────────┴─────────┐
+                ▼                   ▼
+              WIN11               FILE01
+          Domain Client          File Server
 ```
 
 ---
 
 ## Project Phases
 
-| Phase                     | Component        | Key Features                                           | Status |
-| ------------------------- | ---------------- | ------------------------------------------------------ | :----: |
-| [01](01-ActiveDirectory/) | Active Directory | AD DS, OU, users, groups, FSMO, replication, backup    |   ✅   |
-| [02](02-DNS/)             | DNS              | AD-integrated DNS, A/PTR/SRV, redundancy, DC Locator   |   ✅   |
-| [03](03-DHCP/)            | DHCP             | Scope, options, DDNS, reservations, failover 50/50     |   ✅   |
-| [04](04-GroupPolicy/)     | Group Policy     | Security baseline, BitLocker, LAPS, SYSVOL, GPO backup |   ✅   |
-| [05](05-FileServer/)      | File Server      | AGDLP, SMB, NTFS, FSRM, backup, restore                |   ✅   |
+| Phase                     | Component               | Status |
+| ------------------------- | ----------------------- | :----: |
+| [02](02-ActiveDirectory/) | Active Directory        |   ✅   |
+| [03](03-DNS/)             | DNS                     |   ✅   |
+| [04](04-DHCP/)            | DHCP                    |   ✅   |
+| [05](05-GroupPolicy/)     | Group Policy / Security |   ✅   |
+| [06](06-FileServer/)      | File Server             |   ✅   |
 
 ---
 
-## Core Technologies
+## Evidence
 
-`Windows Server 2025`
-`Active Directory Domain Services`
-`DNS`
-`DHCP`
-`Group Policy`
-`PowerShell`
-`BitLocker`
-`Windows LAPS`
-`AGDLP`
-`SMB / NTFS`
-`FSRM`
-`Windows Server Backup`
+### Active Directory
+
+![Active Directory](01-ActiveDirectory/captures/09-dcdiag-health.png)
+
+### DHCP Failover
+
+![DHCP Failover](03-DHCP/captures/08-dhcp-failover.png)
+
+### Group Policy / BitLocker
+
+![BitLocker](04-GroupPolicy/captures/06-bitlocker-status.png)
+
+### File Server
+
+![File Server](05-FileServer/captures/04-smb-shares.png)
+
+> Additional commands, screenshots, and validation results are available in each phase.
 
 ---
 
-## Security
+## Key Technologies
+
+`Windows Server 2025` · `Active Directory` · `DNS` · `DHCP` · `Group Policy` · `PowerShell` · `BitLocker` · `Windows LAPS` · `AGDLP` · `SMB` · `NTFS` · `FSRM` · `Backup & Restore`
+
+---
+
+## How to Reproduce
+
+Requirements:
 
 ```text
-Least Privilege
-      +
-Administrative Account Separation
-      +
-Secure DNS
-      +
-BitLocker
-      +
-Windows LAPS
-      +
-AGDLP
-      +
-SMB / NTFS Security
-      +
-Backup / Restore
+VMware
+Windows Server 2025
+Windows 11
+PowerShell
 ```
 
-Sensitive data such as passwords, LAPS credentials, BitLocker recovery keys, and secrets are redacted from evidence.
-
----
-
-## Validation
-
-The project includes real configuration and validation evidence:
+Deployment order:
 
 ```text
-CONFIGURE
-    ↓
-TEST
-    ↓
-FAILURE TEST
-    ↓
-RECOVERY
-    ↓
-VALIDATION
-    ↓
-SCREENSHOT / COMMAND OUTPUT
+01. Prepare virtual machines
+02. Deploy Active Directory
+03. Configure DNS
+04. Configure DHCP Failover
+05. Apply Group Policies
+06. Configure FILE01
+07. Validate services
+08. Test failure / recovery
 ```
 
-Validated areas:
-
-- AD replication
-- DNS resolution
-- DHCP failover
-- GPO application
-- BitLocker recovery
-- Windows LAPS
-- Department isolation
-- SMB / NTFS permissions
-- Backup and restore
-- SHA256 integrity validation
+Detailed commands are available in each phase README.
 
 ---
 
 ## Repository Structure
 
 ```text
-X10THINK/
+Windows-Server-2025-Enterprise-Infrastructure/
 │
 ├── README.md
-│
 ├── 01-ActiveDirectory/
-│   ├── README.md
-│   └── assets/
-│
 ├── 02-DNS/
-│   ├── README.md
-│   └── assets/
-│
 ├── 03-DHCP/
-│   ├── README.md
-│   └── assets/
-│
 ├── 04-GroupPolicy/
-│   ├── README.md
-│   └── assets/
-│
 └── 05-FileServer/
-    ├── README.md
-    └── assets/
 ```
 
 ---
 
-## Skills Demonstrated
+## Related Project
 
-`Windows Administration` · `Active Directory` · `DNS` · `DHCP` · `GPO` · `PowerShell` · `FSMO` · `Replication` · `BitLocker` · `Windows LAPS` · `AGDLP` · `SMB` · `NTFS` · `FSRM` · `Backup & Recovery` · `Troubleshooting` · `High Availability`
+Linux infrastructure portfolio:
+
+[Linux Infrastructure Project]
 
 ---
 
-## Final Status
+## Security
 
-```text
-ACTIVE DIRECTORY : VALIDATED
-DNS              : VALIDATED
-DHCP             : VALIDATED
-GROUP POLICY     : VALIDATED
-FILE SERVER      : VALIDATED
-BACKUP / RESTORE : VALIDATED
-```
+Sensitive information is redacted from screenshots and command outputs:
 
+- passwords
+- Windows LAPS credentials
+- BitLocker recovery keys
+- secrets and tokens
 
-----
+---
 
-Built and validated a Windows Server 2025 enterprise infrastructure in a VMware lab environment.
+## License
 
-Implemented:
-
-* Active Directory with two Domain Controllers
-* DNS redundancy and AD-integrated zones
-* DHCP Failover 50/50
-* Group Policy security baseline
-* BitLocker and Windows LAPS
-* File Server with AGDLP, SMB and NTFS permissions
-* FSRM quotas
-* Backup and restore validation
-* PowerShell automation
-
-Domain: `diarabaka.com`
-
-Status: ✅ Validated / Completed
+This project is available under the **MIT License**.
