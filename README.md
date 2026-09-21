@@ -42,11 +42,11 @@ Enterprise Windows infrastructure lab built with **Windows Server 2025**, Active
 
 | Phase                     | Component               | Status |
 | ------------------------- | ----------------------- | :----: |
-| [02](02-ActiveDirectory/) | Active Directory        |   ✅   |
-| [03](03-DNS/)             | DNS                     |   ✅   |
-| [04](04-DHCP/)            | DHCP                    |   ✅   |
-| [05](05-GroupPolicy/)     | Group Policy / Security |   ✅   |
-| [06](06-FileServer/)      | File Server             |   ✅   |
+| [01](01-ActiveDirectory/) | Active Directory        |   ✅   |
+| [02](02-DNS/)             | DNS                     |   ✅   |
+| [03](03-DHCP/)            | DHCP                    |   ✅   |
+| [04](04-GroupPolicy/)     | Group Policy / Security |   ✅   |
+| [05](05-FileServer/)      | File Server             |   ✅   |
 
 ---
 
