@@ -2,27 +2,6 @@
 
 ## Architecture
 
-```text
-DIARABAKA.COM
-│
-├── Domain Controllers
-│   ├── DC01
-│   └── DC02
-│
-└── OU=Diarabaka
-    ├── Users
-    │   ├── IT
-    │   ├── HR
-    │   ├── Finance
-    │   ├── Marketing
-    │   └── Sales
-    ├── Groups
-    ├── Computers
-    ├── Servers
-    ├── Admins
-    └── Service Accounts
-```
-
 ![AD Architecture](assets/01-architecture-ou.png)
 
 ---
