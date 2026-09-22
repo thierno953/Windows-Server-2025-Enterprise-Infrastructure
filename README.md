@@ -119,14 +119,6 @@ Windows-Server-2025-Enterprise-Infrastructure/
 
 ---
 
-## Related Project
-
-Linux infrastructure portfolio:
-
-[Linux Infrastructure Project]
-
----
-
 ## Security
 
 Sensitive information is redacted from screenshots and command outputs:
