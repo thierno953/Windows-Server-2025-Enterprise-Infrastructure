@@ -1,4 +1,4 @@
-# PHASE 06 - FILE SERVER
+# FILE SERVER
 
 ## Architecture
 
