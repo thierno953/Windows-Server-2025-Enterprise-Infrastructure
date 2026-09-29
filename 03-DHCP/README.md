@@ -9,9 +9,9 @@
                        │
           ┌────────────┴────────────┐
           ▼                         ▼
-        DC01                      DC02
-   192.168.1.10              192.168.1.11
-   AD + DNS + DHCP           AD + DNS + DHCP
+   WS2025-DC01                WS2025-DC02
+   192.168.1.10               192.168.1.11
+   AD + DNS + DHCP            AD + DNS + DHCP
           │                         │
           └────────────┬────────────┘
                        │
@@ -22,24 +22,21 @@
                      WIN11
 ```
 
-![DHCP Architecture](assets/01-dhcp-architecture.png)
-
 ---
 
-## Role / Authorization
+## 01 - DHCP Role / Services
 
 ```powershell
 Get-WindowsFeature DHCP
 Get-Service DHCPServer
 Get-DhcpServerInDC
-Get-DhcpServerv4Binding
 ```
 
-![DHCP Authorization](assets/02-dhcp-role-authorization.png)
+![DHCP Role and Services](assets/01-dhcp-role-services.png)
 
 ---
 
-## IPv4 Scope
+## 02 - IPv4 Scope
 
 | Parameter | Value            |
 | --------- | ---------------- |
@@ -47,32 +44,25 @@ Get-DhcpServerv4Binding
 | Start     | `192.168.1.100`  |
 | End       | `192.168.1.200`  |
 | Mask      | `255.255.255.0`  |
+| State     | `Active`         |
 
-![DHCP Scope](assets/03-dhcp-scope.png)
-
----
-
-## DHCP Options
-
-| Option       | Value                          |
-| ------------ | ------------------------------ |
-| `003` Router | `192.168.1.1`                  |
-| `006` DNS    | `192.168.1.10`, `192.168.1.11` |
-| `015` Domain | `diarabaka.com`                |
-
-![DHCP Options](assets/04-dhcp-options.png)
+![DHCP Scope](assets/02-dhcp-scope.png)
 
 ---
 
-## Lease / Reservation
+## 03 - DHCP Options
 
-![WIN11 Reservation](assets/05-win11-lease-reservation.png)
+| Option            | Value                          |
+| ----------------- | ------------------------------ |
+| `003` Router      | `192.168.1.1`                  |
+| `006` DNS Servers | `192.168.1.10`, `192.168.1.11` |
+| `015` DNS Domain  | `diarabaka.com`                |
+
+![DHCP Options](assets/03-dhcp-options.png)
 
 ---
 
-## WIN11 Configuration
-
-![WIN11 IPConfig](assets/06-win11-ipconfig.png)
+## 04 - WIN11 DHCP Configuration
 
 ```text
 DHCP       : Enabled
@@ -82,89 +72,141 @@ DNS 2      : 192.168.1.11
 DNS suffix : diarabaka.com
 ```
 
+![WIN11 DHCP Configuration](assets/04-win11-dhcp.png)
+
 ---
 
-## Dynamic DNS
+## 05 - Lease / Reservation
 
-![Dynamic DNS](assets/07-dhcp-ddns.png)
+The WIN11 client lease and DHCP reservation were verified from the DHCP server.
+
+![WIN11 Lease and Reservation](assets/05-lease-reservation.png)
+
+---
+
+## 06 - Dynamic DNS
+
+Dynamic DNS integration was validated for the WIN11 domain client.
 
 ```text
 WIN11
-├── A
-└── PTR
+ ├── A Record
+ └── PTR Record
 ```
+
+![DHCP Dynamic DNS](assets/06-dhcp-ddns.png)
 
 ---
 
-## DHCP Failover
-
-![DHCP Failover](assets/08-dhcp-failover.png)
+## 07 - DHCP Failover
 
 | Parameter             | Value            |
 | --------------------- | ---------------- |
 | Relationship          | `DHCP-DC01-DC02` |
-| Mode                  | Load Balance     |
+| Mode                  | `LoadBalance`    |
 | Distribution          | `50/50`          |
 | State                 | `Normal`         |
 | Auto State Transition | Enabled          |
 | State Switch Interval | `01:00:00`       |
 | MCLT                  | Configured       |
 
----
-
-## Synchronization
-
-![DHCP Synchronization](assets/09-dhcp-synchronization.png)
+![DHCP Failover](assets/07-dhcp-failover.png)
 
 ---
 
-## Failure Test
+## 08 - Controlled Failure Test
+
+### 08A - WS2025-DC01 DHCP Stopped
+
+A controlled failure was performed by stopping only the DHCP service on `WS2025-DC01`.
 
 ```text
-DC01 unavailable
-       ↓
-DC02 available
-       ↓
-WIN11 renews lease
-       ↓
-DHCP remains operational
+WS2025-DC01
+     │
+     ▼
+DHCP Service Stopped
 ```
 
-```powershell
-ipconfig /renew
-```
+![DC01 DHCP Stopped](assets/08a-dc01-dhcp-stopped.png)
 
-![DHCP Failure](assets/10-dhcp-failure-test.png)
+### 08B - Client Continuity Through WS2025-DC02
 
----
-
-## Recovery
-
-![DHCP Recovery](assets/11-dhcp-recovery.png)
+While DHCP was unavailable on `WS2025-DC01`, WIN11 successfully renewed its network configuration through the remaining DHCP partner.
 
 ```text
-State : Normal
+WS2025-DC01 DHCP unavailable
+            ↓
+WS2025-DC02 available
+            ↓
+WIN11 renews DHCP lease
+            ↓
+DHCP service remains operational
 ```
+
+![DHCP Failover Client Test](assets/08b-dhcp-failover-win11.png)
 
 ---
 
-## Final Validation
+## 09 - DHCP Recovery
 
-![DHCP Final Validation](assets/12-dhcp-final-validation.png)
+The DHCP service on `WS2025-DC01` was restored and the failover relationship returned to its normal operational state.
 
-### Validation
+```text
+WS2025-DC01 DHCP : Running
+Failover State   : Normal
+```
 
-| Control          | Status |
-| ---------------- | :----: |
-| DHCP Roles       |   ✅   |
-| AD Authorization |   ✅   |
-| Scope            |   ✅   |
-| Options          |   ✅   |
-| Reservation      |   ✅   |
-| Dynamic DNS      |   ✅   |
-| Failover 50/50   |   ✅   |
-| Synchronization  |   ✅   |
-| Failure Test     |   ✅   |
-| Recovery         |   ✅   |
+![DHCP Recovery](assets/09-dhcp-recovery.png)
 
-**Status:** ✅ `VALIDATED`
+---
+
+## 10 - Final Validation
+
+### 10A - Server-Side Validation
+
+Final validation confirmed:
+
+```text
+WS2025-DC01 DHCP : Running
+WS2025-DC02 DHCP : Running
+Failover Mode    : LoadBalance
+Distribution     : 50/50
+Failover State   : Normal
+Scope            : Active on both partners
+```
+
+![DHCP Final Server Validation](assets/10a-dhcp-final-validation-server.png)
+
+### 10B - Client-Side Validation
+
+WIN11 successfully received its final DHCP configuration after failover and recovery testing.
+
+```text
+DHCP       : Enabled
+IPv4       : Valid scope address
+Gateway    : 192.168.1.1
+DNS        : 192.168.1.10 / 192.168.1.11
+DNS Suffix : diarabaka.com
+```
+
+![DHCP Final Client Validation](assets/10b-dhcp-final-validation-client.png)
+
+---
+
+## Validation
+
+```text
+DHCP Roles
+AD Authorization
+IPv4 Scope
+DHCP Options
+WIN11 DHCP
+Lease / Reservation
+Dynamic DNS
+Failover 50/50
+Controlled Failure
+Client Continuity
+Recovery
+Final Server Validation
+Final Client Validation
+```

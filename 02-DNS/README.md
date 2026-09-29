@@ -1,31 +1,26 @@
 # DNS
 
-## Architecture
+## DNS Role & Service
+
+DNS is hosted on both Windows Server 2025 Domain Controllers.
 
 ```text
-                    WIN11
-                      │
-                   DNS
-                      │
-             ┌────────┴────────┐
-             ▼                 ▼
-           DC01              DC02
-        AD DS + DNS       AD DS + DNS
-             │                 │
-             └────────┬────────┘
-                      │
-                AD Replication
-                      │
-      ┌───────────────┼────────────────┐
-      ▼               ▼                ▼
-diarabaka.com   _msdcs.diarabaka.com   Reverse DNS
+WS2025-DC01
+├── AD DS
+└── DNS
+
+WS2025-DC02
+├── AD DS
+└── DNS
 ```
 
-![DNS Architecture](assets/01-dns-architecture.png)
+![DNS Role and Service](assets/01-dns-role-service.png)
 
 ---
 
 ## DNS Zones
+
+Active Directory-integrated DNS provides forward and reverse name resolution.
 
 ```text
 diarabaka.com
@@ -37,18 +32,32 @@ _msdcs.diarabaka.com
 
 ---
 
-## A / PTR Records
+## A & PTR Records
 
-![A PTR](assets/03-a-ptr-records.png)
+Forward and reverse DNS records were verified for both Domain Controllers.
 
 ```text
-Hostname -> A -> IP
-IP -> PTR -> Hostname
+WS2025-DC01.diarabaka.com
+        ↓
+192.168.1.10
+
+WS2025-DC02.diarabaka.com
+        ↓
+192.168.1.11
 ```
+
+```text
+Hostname → A → IPv4
+IPv4     → PTR → Hostname
+```
+
+![A and PTR Records](assets/03-dns-a-ptr-records.png)
 
 ---
 
-## Active Directory SRV
+## Active Directory SRV Records
+
+Active Directory service records were verified for LDAP, Kerberos and Global Catalog discovery.
 
 ```powershell
 Resolve-DnsName "_ldap._tcp.dc._msdcs.diarabaka.com" -Type SRV
@@ -56,101 +65,173 @@ Resolve-DnsName "_kerberos._tcp.diarabaka.com" -Type SRV
 Resolve-DnsName "_ldap._tcp.gc._msdcs.diarabaka.com" -Type SRV
 ```
 
-![LDAP SRV](assets/04-ldap-srv.png)
+![Active Directory SRV Records](assets/04-dns-srv-records.png)
 
 ---
 
-## WIN11 DNS
+## WIN11 DNS Configuration
 
-![WIN11 DNS](assets/05-win11-dns.png)
+The Windows 11 domain client uses only the internal Active Directory DNS servers.
 
 ```text
 WIN11
-├── DC01
-└── DC02
+ │
+ ├── DNS1 → 192.168.1.10
+ │           WS2025-DC01
+ │
+ └── DNS2 → 192.168.1.11
+             WS2025-DC02
 ```
 
-No public DNS configured directly on the domain client.
+No public DNS server is configured directly on the domain client.
+
+![WIN11 DNS Configuration](assets/05-win11-dns-configuration.png)
 
 ---
 
-## External Resolution
+## Domain Controller Locator
 
-![External DNS](assets/06-external-resolution.png)
-
----
-
-## DC Locator
-
-![DC Locator](assets/07-dc-locator.png)
+DNS SRV records allow the domain client to locate an available Domain Controller.
 
 ```text
-DNS -> SRV -> DC Locator -> Domain Controller
+WIN11
+  ↓
+DNS
+  ↓
+SRV Records
+  ↓
+DC Locator
+  ↓
+Domain Controller
 ```
+
+![Domain Controller Locator](assets/06-dns-dc-locator.png)
 
 ---
 
-## Kerberos
+## External DNS Resolution
 
-![Kerberos](assets/08-kerberos.png)
+External name resolution was tested while keeping the domain client configured with internal DNS servers.
+
+```text
+WIN11
+  ↓
+Internal DNS
+  ↓
+External Resolution
+```
+
+![External DNS Resolution](assets/07-dns-external-resolution.png)
 
 ---
 
 ## DNS Health
 
-![DNS Health](assets/09-dcdiag-dns.png)
+DNS health was checked with Microsoft Active Directory diagnostic tools.
 
-```text
-DC01 : PASS
-DC02 : PASS
-DNS  : PASS
+```powershell
+dcdiag /e /test:dns
 ```
 
----
-
-## DNS Logs
-
-![DNS Logs](assets/10-dns-logs.png)
-
----
-
-## Redundancy / Failure Test
-
 ```text
-DC01 unavailable
-       ↓
-DC02 available
-       ↓
-DNS resolution continues
-       ↓
-DC Locator remains functional
+DNS diagnostic checks
+        ↓
+Domain Controllers
+        ↓
+Active Directory DNS
 ```
 
-![DNS Continuity](assets/11-dns-continuity.png)
+![DNS Health](assets/08-dns-dcdiag.png)
 
 ---
 
-## Final Validation
+## Active Directory Replication
 
-![DNS Final Validation](assets/12-dns-final-validation.png)
+DNS-integrated Active Directory replication was verified between both Domain Controllers.
 
 ```text
+WS2025-DC01 ↔ WS2025-DC02
+
 Replication failures : 0
 ```
 
-### Validation
+![Active Directory Replication](assets/09-dns-replication.png)
 
-| Control                 | Status |
-| ----------------------- | :----: |
-| AD-Integrated DNS       |   ✅   |
-| Forward / Reverse Zones |   ✅   |
-| A / PTR                 |   ✅   |
-| LDAP / Kerberos SRV     |   ✅   |
-| WIN11 DNS               |   ✅   |
-| External Resolution     |   ✅   |
-| DC Locator              |   ✅   |
-| DCDIAG                  |   ✅   |
-| DNS Redundancy          |   ✅   |
-| Failure / Recovery      |   ✅   |
+---
 
-**Status:** ✅ `VALIDATED`
+## DNS Redundancy Test
+
+### Controlled Failure
+
+The DNS service on `WS2025-DC01` was stopped as part of the redundancy test.
+
+```text
+WS2025-DC01
+     ↓
+DNS Service
+     ↓
+Stopped
+```
+
+![DC01 DNS Service Stopped](assets/10a-dc01-dns-stopped.png)
+
+---
+
+### DNS Failover to WS2025-DC02
+
+During the controlled failure, `WS2025-DC02` remained available to provide DNS services.
+
+```text
+WS2025-DC01 DNS
+      ↓
+   Unavailable
+
+WS2025-DC02 DNS
+      ↓
+   Available
+      ↓
+DNS Resolution
+      ↓
+DC Locator
+```
+
+![DNS Failover to DC02](assets/10b-dns-failover-dc02.png)
+
+---
+
+## Key Skills
+
+```text
+Windows Server DNS
+Active Directory Integrated DNS
+Forward Lookup Zones
+Reverse Lookup Zones
+A Records
+PTR Records
+SRV Records
+LDAP
+Kerberos
+Global Catalog
+DC Locator
+DNS Client Configuration
+DCDIAG
+REPADMIN
+DNS Redundancy
+Controlled Failure Testing
+PowerShell
+```
+
+---
+
+## Infrastructure
+
+| Component       | Configuration    |
+| --------------- | ---------------- |
+| Domain          | `diarabaka.com`  |
+| DNS Server 1    | `WS2025-DC01`    |
+| DNS Server 1 IP | `192.168.1.10`   |
+| DNS Server 2    | `WS2025-DC02`    |
+| DNS Server 2 IP | `192.168.1.11`   |
+| Client          | `WIN11`          |
+| Network         | `192.168.1.0/24` |
+| Platform        | VMware           |

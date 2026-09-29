@@ -1,17 +1,52 @@
 # FILE SERVER
 
-## Architecture
+## 01 - FILE01 Baseline
 
 ```text
-USERS
-  ↓
-GLOBAL GROUPS
-  ↓
-DOMAIN LOCAL GROUPS
-  ↓
-SMB + NTFS
-  ↓
+Server       : FILE01
+Domain       : diarabaka.com
+Role         : File Server
+SMB Service  : Running
+```
+
+![FILE01 Baseline](assets/01-file01-baseline.png)
+
+---
+
+## 02 - Storage
+
+```text
 FILE01
+│
+├── System Volume
+│
+└── Data Volume
+    └── Shares
+        ├── Departments
+        │   ├── IT
+        │   ├── HR
+        │   ├── Finance
+        │   ├── Marketing
+        │   └── Sales
+        └── Public
+```
+
+![FILE01 Storage](assets/02-file01-storage.png)
+
+---
+
+## 03 - AGDLP
+
+Authorization model:
+
+```text
+USER
+  ↓
+GLOBAL GROUP
+  ↓
+DOMAIN LOCAL GROUP
+  ↓
+SMB / NTFS PERMISSION
 ```
 
 Example:
@@ -26,42 +61,19 @@ DL-FS-HR-Modify
 HR$
 ```
 
-![FILE01](assets/01-file01-overview.png)
+| Global Group   | Resource Group           | Resource     |
+| -------------- | ------------------------ | ------------ |
+| `GG-IT`        | `DL-FS-IT-Modify`        | `IT$`        |
+| `GG-HR`        | `DL-FS-HR-Modify`        | `HR$`        |
+| `GG-Finance`   | `DL-FS-Finance-Modify`   | `Finance$`   |
+| `GG-Marketing` | `DL-FS-Marketing-Modify` | `Marketing$` |
+| `GG-Sales`     | `DL-FS-Sales-Modify`     | `Sales$`     |
+
+![AGDLP](assets/03-file-server-agdlp.png)
 
 ---
 
-## Storage
-
-```text
-Shares
-├── Departments
-│   ├── IT
-│   ├── HR
-│   ├── Finance
-│   ├── Marketing
-│   └── Sales
-└── Public
-```
-
-![Storage](assets/02-storage-tree.png)
-
----
-
-## AGDLP
-
-| Global Group   | Resource Group           | Permission          |
-| -------------- | ------------------------ | ------------------- |
-| `GG-IT`        | `DL-FS-IT-Modify`        | `IT$` Modify        |
-| `GG-HR`        | `DL-FS-HR-Modify`        | `HR$` Modify        |
-| `GG-Finance`   | `DL-FS-Finance-Modify`   | `Finance$` Modify   |
-| `GG-Marketing` | `DL-FS-Marketing-Modify` | `Marketing$` Modify |
-| `GG-Sales`     | `DL-FS-Sales-Modify`     | `Sales$` Modify     |
-
-![AGDLP](assets/03-agdlp-groups.png)
-
----
-
-## SMB Shares
+## 04 - SMB Shares
 
 ```text
 IT$
@@ -72,11 +84,37 @@ Sales$
 Public$
 ```
 
+Access-Based Enumeration is enabled on the departmental shares.
+
 ![SMB Shares](assets/04-smb-shares.png)
 
 ---
 
-## SMB / NTFS ACL
+## 05 - SMB Permissions
+
+Resource permissions are assigned through Domain Local groups.
+
+```text
+HR$
+    ↓
+DIARABAKA\DL-FS-HR-Modify
+
+Finance$
+    ↓
+DIARABAKA\DL-FS-Finance-Modify
+
+IT$
+    ↓
+DIARABAKA\DL-FS-IT-Modify
+```
+
+![SMB Permissions](assets/05-smb-permissions.png)
+
+---
+
+## 06 - NTFS Permissions
+
+Permission model:
 
 ```text
 SMB Full
@@ -86,141 +124,207 @@ NTFS Modify
 Effective Modify
 ```
 
-Administrative ACLs preserved:
+Administrative permissions are preserved:
 
 ```text
 SYSTEM
 BUILTIN\Administrators
 ```
 
-![SMB NTFS ACL](assets/05-smb-ntfs-acl.png)
+Department resource groups receive NTFS `Modify` permissions.
+
+![NTFS Permissions](assets/06-ntfs-permissions.png)
 
 ---
 
-## Access Tests
+## 07 - Positive Access Test
 
-HR user:
+A user belonging to the HR department was used to validate access to:
 
 ```text
 \\FILE01\HR$
 ```
 
-Result:
+Validation:
 
 ```text
-Modify : Allowed
+TCP 445       : Reachable
+HR$ Access    : Allowed
+File Creation : Successful
+File Read     : Successful
 ```
 
-![Allowed Access](assets/06-access-allowed.png)
-
-Negative test:
-
-![Access Denied](assets/07-access-denied.png)
-
-Result:
-
-```text
-Access Denied
-```
+![HR Positive Access](assets/07-hr-positive-access.png)
 
 ---
 
-## SMB Security
+## 08 - Department Isolation
 
-![SMB Security](assets/08-smb-security.png)
+A negative access test was performed using the HR account against another department share.
+
+Example:
 
 ```text
-SMB1            : Disabled / Not Required
-SMB2/SMB3       : Enabled
-ABE             : Enabled
-Least Privilege : Applied
+HR User
+   ↓
+Finance$
+   ↓
+ACCESS DENIED
 ```
+
+This validates departmental isolation and least-privilege access.
+
+![Department Isolation](assets/08-department-isolation.png)
 
 ---
 
-## FSRM
+## 09 - FSRM Quotas
+
+File Server Resource Manager is used to control departmental storage.
 
 ```text
 Department Quota : 5 GB
-Type             : Hard
-Thresholds       : 80% / 90% / 100%
+Quota Type       : Hard
+SoftLimit        : False
 ```
 
-![FSRM](assets/09-fsrm-quotas.png)
+Threshold strategy:
+
+```text
+80%
+90%
+100%
+```
+
+![FSRM Quotas](assets/09-fsrm-quotas.png)
 
 ---
 
-## Backup
+## 10 - Backup Validation
 
-![FILE01 Backup](assets/10-fileserver-backup.png)
+### Backup Version
+
+Windows Server Backup is configured with a dedicated backup target separate from the data volume.
 
 ```text
-Backup target:
-FILE01_BACKUP_TARGET (F:)
-
-Can recover:
-Volume(s), File(s)
+FILE01 Data
+     ↓
+Separate Backup Target
+     ↓
+Windows Server Backup
 ```
+
+![File Server Backup](assets/10a-file-server-backup.png)
+
+### Backup Content
+
+The backup version and included items were verified before recovery testing.
+
+```text
+Backup Version : Present
+Backup Target  : Verified
+Backup Items   : Verified
+```
+
+![Backup Content](assets/10b-backup-content.png)
 
 ---
 
-## Restore Validation
+## 11 - Restore Validation
 
-Restored file:
+### SHA256 Integrity Validation
+
+A test file was restored to an alternate location:
 
 ```text
-C:\Restore-Test\Backup-Test.txt
+C:\Restore-Test
 ```
 
-![Restore Validation](assets/11-restore-validation.png)
+The original and restored SHA256 hashes were compared.
 
-ACL validation:
-
-```powershell
-icacls "C:\Restore-Test\Backup-Test.txt"
+```text
+Original SHA256
+       =
+Restored SHA256
 ```
 
 Result:
 
 ```text
-File restored    : PASS
-SHA256           : PASS
-ACL preservation : PASS
-SMB validation   : PASS
+MATCH : True
 ```
+
+![Restore Hash Validation](assets/11a-restore-hash-validation.png)
+
+### ACL Validation
+
+NTFS permissions on the restored file were also reviewed.
+
+```powershell
+icacls "<RESTORED_FILE>"
+```
+
+Validation:
+
+```text
+File Restored    : PASS
+SHA256           : PASS
+ACL Preservation : PASS
+```
+
+![Restore ACL Validation](assets/11b-restore-acl-validation.png)
 
 ---
 
-## SMB / NTFS Permissions
+## 12 - Final Validation
 
-![FILE01 Final Validation](assets/12-fileserver-final-validation.png)
+### FILE01 Server Validation
+
+Final server-side validation confirms:
 
 ```text
-LanmanServer   : Running
-SMB Shares     : Available
-NTFS ACL       : Preserved
-FSRM           : Functional
-Client Access  : Functional
-Isolation      : Functional
-Backup         : Available
-Restore        : Validated
+LanmanServer : Running
+SMB Shares   : Available
+FSRM         : Functional
+Backup       : Available
 ```
 
-### Validation
+![FILE01 Final Server Validation](assets/12a-file-server-final-server.png)
 
-| Control              | Status |
-| -------------------- | :----: |
-| FILE01               |   ✅   |
-| AGDLP                |   ✅   |
-| SMB Shares           |   ✅   |
-| SMB / NTFS ACL       |   ✅   |
-| Department Isolation |   ✅   |
-| ABE                  |   ✅   |
-| SMB Security         |   ✅   |
-| FSRM                 |   ✅   |
-| Backup               |   ✅   |
-| Restore              |   ✅   |
-| SHA256               |   ✅   |
-| ACL Preservation     |   ✅   |
+### Client Validation
 
-**Status:** ✅ `VALIDATED`
+Final validation from the Windows 11 client confirms:
+
+```text
+DNS Resolution    : Functional
+TCP 445           : Reachable
+Authorized Share  : Accessible
+Public Share      : Accessible
+Department Access : Isolated
+```
+
+![FILE01 Final Client Validation](assets/12b-file-server-final-client.png)
+
+---
+
+## Validation
+
+```text
+FILE01
+Storage
+AGDLP
+SMB Shares
+SMB Permissions
+NTFS Permissions
+Positive Access
+Department Isolation
+Access-Based Enumeration
+FSRM
+Backup
+Backup Content
+Restore
+SHA256 Integrity
+ACL Preservation
+Final Server Validation
+Final Client Validation
+```
