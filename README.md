@@ -409,7 +409,7 @@ Template configuration includes:
 
 ---
 
-## TASK20 - Certificate Auto-Enrollment
+## 10 - Certificate Auto-Enrollment
 
 Certificate enrollment is integrated with Group Policy.
 
@@ -425,7 +425,7 @@ Domain Computers
 
 ---
 
-## TASK21 - User Certificates
+## 11 - User Certificates
 
 Validated certificate enrollment for domain users.
 
@@ -441,7 +441,7 @@ User Certificate
 
 ---
 
-## TASK22 - Computer Certificates
+## 12 - Computer Certificates
 
 Validated computer certificate enrollment.
 
@@ -455,7 +455,7 @@ for services requiring machine authentication.
 
 ---
 
-## TASK23 - LDAPS
+## 13 - LDAPS
 
 Implemented and validated LDAP over SSL/TLS.
 
