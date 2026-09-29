@@ -1,6 +1,6 @@
 # Windows Server 2025 Enterprise Infrastructure
 
-Enterprise-style Windows Server lab built to demonstrate **Active Directory, networking, security, PKI, file services, automation, and high availability** administration.
+Enterprise Windows Server lab covering **Active Directory, DNS, DHCP, Group Policy, security, file services, PKI, JEA, backup/restore, and LDAPS**.
 
 ---
 
@@ -10,14 +10,15 @@ Enterprise-style Windows Server lab built to demonstrate **Active Directory, net
 | ------------- | ------------------ | ---------------- |
 | `WS2025-DC01` | AD DS / DNS / DHCP | `192.168.1.10`   |
 | `WS2025-DC02` | AD DS / DNS / DHCP | `192.168.1.11`   |
-| `FILE01`      | File Server        | Dedicated server |
+| `FILE01`      | File Server        | Dedicated Server |
 | `WIN11`       | Domain Client      | DHCP             |
+| Enterprise CA | AD CS / PKI        | Dedicated Server |
 | Gateway       | Network Gateway    | `192.168.1.1`    |
 
 ```text
-Domain  : diarabaka.com
-Network : 192.168.1.0/24
-Platform: VMware
+Domain   : diarabaka.com
+Network  : 192.168.1.0/24
+Platform : VMware
 ```
 
 ---
@@ -27,126 +28,113 @@ Platform: VMware
 ```text
                          DIARABAKA.COM
                               │
-               ┌──────────────┴──────────────┐
-               │                             │
-               ▼                             ▼
-        WS2025-DC01                    WS2025-DC02
-        192.168.1.10                   192.168.1.11
-               │                             │
-          AD DS / DNS                   AD DS / DNS
-             DHCP                         DHCP
-               │                             │
-               └──────── DHCP Failover ──────┘
+              ┌───────────────┴───────────────┐
+              │                               │
+              ▼                               ▼
+       WS2025-DC01                      WS2025-DC02
+       192.168.1.10                     192.168.1.11
+              │                               │
+        AD DS / DNS / DHCP              AD DS / DNS / DHCP
+              │                               │
+              └──────── DHCP Failover ────────┘
                               │
                               ▼
                             WIN11
                               │
-                              ├── Group Policy
-                              ├── BitLocker
-                              ├── Windows LAPS
-                              ├── Certificates
-                              └── LDAPS
+             ┌────────────────┼────────────────┐
+             │                │                │
+             ▼                ▼                ▼
+            GPO           BitLocker/LAPS    Certificates
+                                               │
+                                               ▼
+                                      Enterprise CA Server
+                                               │
+                                      Certificate Issuance
+                                               │
+                                               ▼
+                                      Domain Controller
+                                               │
+                                          LDAPS : 636
                               │
                               ▼
                             FILE01
                               │
-                    SMB / NTFS / FSRM
+                       SMB / NTFS
                               │
-                        Backup / Restore
+                       AGDLP / FSRM
+                              │
+                      Backup / Restore
 ```
 
 ---
 
-# Project Scope
-
-## 01 - Active Directory Domain Services
+# 01 - Active Directory
 
 Implemented:
 
-- Active Directory forest and domain
 - Two Domain Controllers
-- Organizational Unit structure
+- Organizational Units
 - Users and security groups
-- Administrative groups
-- Password policy
-- Account lockout policy
-- FSMO role verification
+- Password and lockout policies
+- FSMO verification
 - Global Catalog
 - AD replication
-- DCDIAG health validation
+- DCDIAG validation
 
 ```text
 WS2025-DC01 <-> WS2025-DC02
-Replication: Redundant AD infrastructure
 ```
 
 ---
 
-## 02 - DNS
+# 02 - DNS
 
-Implemented and tested:
+Implemented:
 
-- Active Directory-integrated DNS
-- Forward lookup zones
-- Reverse lookup zone
-- A records
-- PTR records
-- LDAP / Kerberos / Global Catalog SRV records
-- Internal domain resolution
-- External DNS resolution
+- AD-integrated DNS
+- Forward and reverse zones
+- A / PTR records
+- LDAP / Kerberos / GC SRV records
+- Internal and external resolution
 - DNS redundancy
-- Controlled DNS failure testing
+- Failure and recovery testing
 
 ```text
-DNS1 -> 192.168.1.10
-DNS2 -> 192.168.1.11
+DNS1 : 192.168.1.10
+DNS2 : 192.168.1.11
 ```
 
 ---
 
-## 03 - DHCP
+# 03 - DHCP
 
 Implemented:
 
 - DHCP on both Domain Controllers
-- Active Directory authorization
+- AD authorization
 - IPv4 scope
 - DHCP options
-- Dynamic DNS
 - Reservations
-- DHCP lease validation
+- Dynamic DNS
+- Lease validation
 - DHCP Failover
-- Load Balance mode
-- Controlled failure and recovery testing
+- Load Balance 50/50
+- Failure and recovery testing
 
 ```text
 Scope : 192.168.1.0/24
+Pool  : 192.168.1.100 - 192.168.1.200
 
-Pool:
-192.168.1.100
-      ↓
-192.168.1.200
-
-Failover:
-WS2025-DC01 <-> WS2025-DC02
-
-Mode:
-Load Balance 50 / 50
-```
-
-DHCP options:
-
-```text
-003 Router     -> 192.168.1.1
-006 DNS        -> 192.168.1.10 / 192.168.1.11
-015 DNS Domain -> diarabaka.com
+003 Router     : 192.168.1.1
+006 DNS        : 192.168.1.10 / 192.168.1.11
+015 DNS Domain : diarabaka.com
 ```
 
 ---
 
-## 04 - Group Policy
+# 04 - Group Policy
 
-Implemented workstation security policies:
+Implemented:
 
 ```text
 GPO-WS-Security-Baseline
@@ -154,23 +142,19 @@ GPO-Windows11-BitLocker
 GPO-Windows11-LAPS
 ```
 
-Controls include:
+Controls:
 
 - Windows Defender Firewall
 - Microsoft Defender Antivirus
 - Windows Update
 - BitLocker
-- TPM
-- BitLocker recovery in Active Directory
 - Windows LAPS
-- Password rotation
-- AD password backup
-- Group Policy Result / RSoP
+- RSoP / GPResult
 - SYSVOL validation
 
 ---
 
-## 05 - BitLocker
+# 05 - BitLocker
 
 Validated:
 
@@ -179,12 +163,10 @@ TPM Present        : True
 TPM Ready          : True
 Encryption         : 100%
 Protection         : On
-Encryption Method  : XTS-AES
 TPM Protector      : Present
 Recovery Protector : Present
+AD Backup          : Configured
 ```
-
-Architecture:
 
 ```text
 GPO
@@ -195,46 +177,43 @@ BitLocker
  ↓
 Recovery Password
  ↓
-Active Directory Backup
+Active Directory
 ```
 
-Sensitive recovery keys are not included in this repository.
+> Recovery keys are not stored in this repository.
 
 ---
 
-## 06 - Windows LAPS
+# 06 - Windows LAPS
 
 Implemented:
 
 - Windows LAPS schema
-- Computer self permissions
-- AD authorization
-- LAPS Group Policy
+- OU self permissions
+- LAPS GPO
 - Password complexity
 - Password rotation
-- AD password backup
 - Password encryption
-- LAPS policy processing
+- Active Directory backup
+- Policy processing
 
 ```text
 WIN11
   ↓
 Windows LAPS
   ↓
-Random Local Administrator Password
+Random Local Admin Password
   ↓
-Encrypted Backup
-  ↓
-Active Directory
+Encrypted AD Backup
 ```
 
-No LAPS passwords are stored in screenshots or documentation.
+> LAPS passwords are not stored in screenshots or documentation.
 
 ---
 
-## 07 - File Server
+# 07 - File Server
 
-Dedicated Windows File Server:
+Server:
 
 ```text
 FILE01
@@ -244,15 +223,15 @@ Implemented:
 
 - SMB shares
 - NTFS permissions
-- AGDLP authorization model
+- AGDLP
 - Department isolation
 - Access-Based Enumeration
 - SMB security review
-- File Server Resource Manager
+- FSRM
 - Hard quotas
 - Capacity monitoring
 
-Department shares:
+Shares:
 
 ```text
 IT$
@@ -265,9 +244,9 @@ Public$
 
 ---
 
-## 08 - AGDLP
+# 08 - AGDLP
 
-Resource access follows:
+Authorization model:
 
 ```text
 Accounts
@@ -293,18 +272,16 @@ NTFS Modify
 HR$
 ```
 
-This avoids assigning resource permissions directly to user accounts.
-
 ---
 
-## 09 - Backup and Restore
+# 09 - Backup and Restore
 
-Implemented backup validation workflow:
+Validation workflow:
 
 ```text
 Source Data
     ↓
-Windows Server Backup
+Backup
     ↓
 Backup Version
     ↓
@@ -314,31 +291,27 @@ SHA256 Validation
     ↓
 ACL Verification
     ↓
-SMB Functional Test
+SMB Access Test
 ```
 
-Validation includes:
+Validated through:
 
 - Separate backup target
 - Backup version verification
 - File restore
-- SHA256 integrity comparison
+- SHA256 comparison
 - NTFS ACL verification
-- Post-restore SMB access
+- SMB post-restore test
 
 ```text
-Backup completed
-      ≠
-Backup validated
+Backup completed != Backup validated
 ```
 
 ---
 
-# Security Administration
+# 10 - Just Enough Administration
 
-## 01 - Just Enough Administration
-
-Implemented PowerShell JEA for delegated administration.
+Implemented **PowerShell JEA** for delegated administration.
 
 ```text
 AD User
@@ -347,7 +320,7 @@ GG_ITAdmins
    ↓
 JEA Endpoint
    ↓
-ITAdmin Role Capability
+ITAdmin Role
    ↓
 Restricted Cmdlets
    ↓
@@ -356,129 +329,101 @@ Virtual Administrator Account
 
 Controls:
 
-- Restricted PowerShell endpoint
-- Role capabilities
+- Role Capability
+- Restricted session
+- AD group authorization
 - Cmdlet restrictions
 - Parameter restrictions
-- AD group authorization
-- Virtual administrator account
+- Virtual account
 - Session transcription
 
 ---
 
-## 02 - Active Directory Certificate Services
+# 11 - Active Directory Certificate Services
 
-Implemented an internal Microsoft PKI using:
+A dedicated server hosts the internal **Enterprise Certificate Authority**.
 
 ```text
-Active Directory Certificate Services
-                ↓
-        Enterprise CA
-                ↓
-      Certificate Templates
+Dedicated CA Server
+       ↓
+AD CS
+       ↓
+Enterprise CA
+       ↓
+Certificate Templates
+       ↓
+Certificate Issuance
 ```
 
 Validated:
 
 - AD CS role
-- Certificate Services
-- Certificate Authority availability
+- `CertSvc`
+- Enterprise CA
 - CA connectivity
 
 ---
 
-## 03 - Certificate Templates
+# 12 - Certificate Services
 
-Configured certificate templates for domain resources.
+Implemented:
+
+- Certificate Templates
+- User Certificate Enrollment
+- Computer Certificate Enrollment
+- Group Policy Auto-Enrollment
+- Server Authentication certificates
 
 ```text
 Enterprise CA
       ↓
 Certificate Templates
       ↓
-Users / Computers / Services
-```
-
-Template configuration includes:
-
-- Enrollment permissions
-- Cryptography
-- Subject configuration
-- Enhanced Key Usage
-- Certificate validity
-
----
-
-## 04 - Certificate Auto-Enrollment
-
-Certificate enrollment is integrated with Group Policy.
-
-```text
-Active Directory
+Enrollment / Auto-Enrollment
       ↓
-Group Policy
-      ↓
-Auto-Enrollment
-      ↓
-Domain Computers
+Users / Computers / Servers
 ```
 
 ---
 
-## 05 - User Certificates
+# 13 - LDAPS
 
-Validated certificate enrollment for domain users.
+Implemented and validated **LDAP over SSL/TLS**.
 
-```text
-User
- ↓
-Certificate Enrollment
- ↓
-Enterprise CA
- ↓
-User Certificate
-```
-
----
-
-## 06 - Computer Certificates
-
-Validated computer certificate enrollment.
-
-Certificates include appropriate Enhanced Key Usage such as:
+The Enterprise CA and Domain Controller are **separate systems**.
 
 ```text
-Server Authentication
-```
-
-for services requiring machine authentication.
-
----
-
-## 07 - LDAPS
-
-Implemented and validated LDAP over SSL/TLS.
-
-```text
-Enterprise CA
-     ↓
-Domain Controller Certificate
-     ↓
-Server Authentication
-     ↓
+Enterprise CA Server
+        ↓
+Issues Certificate
+        ↓
+Domain Controller
+        ↓
+Server Authentication Certificate
+        ↓
 TLS
-     ↓
-LDAPS
-     ↓
-TCP 636
+        ↓
+LDAPS TCP 636
+        ↓
+Windows Client
 ```
 
-Validated using the Windows `ldp.exe` client.
+Validation:
 
 ```text
-Server : WS2025-DC01.diarabaka.com
-Port   : 636
-SSL    : Enabled
+DC Certificate        : Present
+Private Key           : Present
+Server Authentication : Enabled
+Certificate           : Valid
+LDAPS Port             : 636
+SSL/TLS Connection    : Successful
+```
+
+Validated using:
+
+```text
+Certificates MMC
+ldp.exe
 ```
 
 ---
@@ -488,30 +433,18 @@ SSL    : Enabled
 ```text
 Windows-Server-2025-Enterprise-Infrastructure/
 │
-├── 01-Infrastructure/
-│
-├── 02-Active-Directory/
-│
-├── 03-DNS/
-│
-├── 04-DHCP/
-│
-├── 05-Group-Policy/
-│
+├── 01-Active-Directory/
+├── 02-DNS/
+├── 03-DHCP/
+├── 04-Group-Policy/
+├── 05-BitLocker-LAPS/
 ├── 06-File-Server/
-│
 ├── 07-JEA/
-│
 ├── 08-ADCS-Certificate-Authority/
-│
 ├── 09-Certificate-Templates/
-│
 ├── 10-GPO-Certificate-AutoEnrollment/
-│
 ├── 11-User-Certificate-Enrollment/
-│
 ├── 12-Computer-Certificate-Enrollment/
-│
 └── 13-LDAPS/
 ```
 
@@ -520,14 +453,12 @@ Each section contains:
 ```text
 README.md
 assets/
-└── validation screenshots
+└── screenshots
 ```
 
 ---
 
 # Validation Method
-
-The project follows a proof-based validation workflow:
 
 ```text
 DISCOVER
@@ -538,31 +469,21 @@ CONFIGURE
    ↓
 TEST
    ↓
-EXPECTED = ACTUAL?
+EXPECTED = ACTUAL
    ↓
 EVIDENCE
    ↓
 VALIDATED
 ```
 
-A service is not considered validated simply because it is installed.
-
 ```text
-INSTALLED
-   ≠
-CONFIGURED
-
-CONFIGURED
-   ≠
-FUNCTIONAL
-
-FUNCTIONAL
-   ≠
-VALIDATED
+INSTALLED != CONFIGURED
+CONFIGURED != FUNCTIONAL
+FUNCTIONAL != VALIDATED
 
 EXPECTED = ACTUAL + EVIDENCE
-   =
-VALIDATED
+           =
+        VALIDATED
 ```
 
 ---
@@ -574,19 +495,19 @@ Least Privilege
 Defense in Depth
 Role-Based Administration
 AGDLP
-Restricted Administration
-Encrypted Authentication
+JEA
 Centralized Identity
+Encrypted Authentication
 Redundancy
 Backup and Recovery
 Evidence-Based Validation
 ```
 
-Sensitive information is excluded from the repository:
+Sensitive data excluded:
 
 ```text
 Passwords
-LAPS Secrets
+LAPS Passwords
 BitLocker Recovery Keys
 Private Keys
 Shared Secrets
@@ -618,7 +539,7 @@ Windows Server Backup
 Backup and Restore
 SHA256 Validation
 JEA
-Active Directory Certificate Services
+AD CS
 PKI
 Certificate Templates
 Certificate Enrollment
@@ -627,7 +548,6 @@ LDAPS
 Troubleshooting
 High Availability
 Security Hardening
-Infrastructure Validation
 ```
 
 ---
@@ -635,34 +555,41 @@ Infrastructure Validation
 # Final Architecture
 
 ```text
-                    DIARABAKA.COM
-                         │
-            ┌────────────┴────────────┐
-            │                         │
-            ▼                         ▼
-     WS2025-DC01               WS2025-DC02
-     AD / DNS / DHCP           AD / DNS / DHCP
-            │                         │
-            └─────── Redundancy ─────┘
-                         │
-                         ▼
-                       WIN11
-                         │
-       ┌─────────────────┼─────────────────┐
-       │                 │                 │
-       ▼                 ▼                 ▼
-     GPO              Security            PKI
-                       │                  │
-                BitLocker/LAPS      AD CS / LDAPS
-                         │
-                         ▼
-                       FILE01
-                         │
-              SMB / NTFS / AGDLP
-                         │
-                  FSRM / Backup
-                         │
-                      Restore
+                       DIARABAKA.COM
+                            │
+             ┌──────────────┴──────────────┐
+             │                             │
+             ▼                             ▼
+      WS2025-DC01                    WS2025-DC02
+      AD / DNS / DHCP                AD / DNS / DHCP
+             │                             │
+             └──────── Redundancy ─────────┘
+                            │
+                            ▼
+                          WIN11
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+       GPO             BitLocker/LAPS           PKI
+                                                │
+                                      Dedicated CA Server
+                                                │
+                                      Certificate Issuance
+                                                │
+                                                ▼
+                                      Domain Controller
+                                                │
+                                           LDAPS : 636
+                            │
+                            ▼
+                          FILE01
+                            │
+                    SMB / NTFS / AGDLP
+                            │
+                       FSRM / Backup
+                            │
+                          Restore
 ```
 
 ---
@@ -673,4 +600,4 @@ Infrastructure Validation
 
 **Domain:** `diarabaka.com`  
 **Platform:** VMware  
-**Focus:** System Administration, Networking, Security & Identity
+**Focus:** System Administration, Networking, Security, Identity & PKI
