@@ -76,7 +76,7 @@ Implemented:
 - DCDIAG health validation
 
 ```text
-WS2025-DC01 ↔ WS2025-DC02
+WS2025-DC01 <-> WS2025-DC02
 Replication: Redundant AD infrastructure
 ```
 
@@ -128,7 +128,7 @@ Pool:
 192.168.1.200
 
 Failover:
-WS2025-DC01 ↔ WS2025-DC02
+WS2025-DC01 <-> WS2025-DC02
 
 Mode:
 Load Balance 50 / 50
