@@ -98,8 +98,8 @@ Implemented and tested:
 - Controlled DNS failure testing
 
 ```text
-DNS1 → 192.168.1.10
-DNS2 → 192.168.1.11
+DNS1 -> 192.168.1.10
+DNS2 -> 192.168.1.11
 ```
 
 ---
@@ -137,9 +137,9 @@ Load Balance 50 / 50
 DHCP options:
 
 ```text
-003 Router     → 192.168.1.1
-006 DNS        → 192.168.1.10 / 192.168.1.11
-015 DNS Domain → diarabaka.com
+003 Router     -> 192.168.1.1
+006 DNS        -> 192.168.1.10 / 192.168.1.11
+015 DNS Domain -> diarabaka.com
 ```
 
 ---
