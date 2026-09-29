@@ -336,7 +336,7 @@ Backup validated
 
 # Security Administration
 
-## 07 - Just Enough Administration
+## 01 - Just Enough Administration
 
 Implemented PowerShell JEA for delegated administration.
 
@@ -366,7 +366,7 @@ Controls:
 
 ---
 
-## 08 - Active Directory Certificate Services
+## 02 - Active Directory Certificate Services
 
 Implemented an internal Microsoft PKI using:
 
@@ -387,7 +387,7 @@ Validated:
 
 ---
 
-## 09 - Certificate Templates
+## 03 - Certificate Templates
 
 Configured certificate templates for domain resources.
 
@@ -409,7 +409,7 @@ Template configuration includes:
 
 ---
 
-## 10 - Certificate Auto-Enrollment
+## 04 - Certificate Auto-Enrollment
 
 Certificate enrollment is integrated with Group Policy.
 
@@ -425,7 +425,7 @@ Domain Computers
 
 ---
 
-## 11 - User Certificates
+## 05 - User Certificates
 
 Validated certificate enrollment for domain users.
 
@@ -441,7 +441,7 @@ User Certificate
 
 ---
 
-## 12 - Computer Certificates
+## 06 - Computer Certificates
 
 Validated computer certificate enrollment.
 
@@ -455,7 +455,7 @@ for services requiring machine authentication.
 
 ---
 
-## 13 - LDAPS
+## 07 - LDAPS
 
 Implemented and validated LDAP over SSL/TLS.
 
